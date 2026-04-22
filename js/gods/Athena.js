@@ -1,8 +1,8 @@
-// AthenaGate.js - Wisdom judgment, the gatekeeper to Zeus
+// Athena.js - Wisdom judgment, the gatekeeper to Zeus
 
 import { DIVINE_BANDS } from '../kernel/Config.js';
 
-export const AthenaGate = {
+export const Athena = {
     // Minimum wisdom score needed to pass (can be adjusted)
     threshold: 65,
     
@@ -70,7 +70,7 @@ export const AthenaGate = {
             feedback.push("Paint a picture. Use imagery (like, as, seems, appears).");
         }
         
-        return feedback.slice(0, 4); // Limit to 4 feedback items
+        return feedback.slice(0, 4);
     },
     
     // Judge an entry
@@ -159,4 +159,4 @@ export const AthenaGate = {
     }
 };
 
-export default AthenaGate;
+export default Athena;
