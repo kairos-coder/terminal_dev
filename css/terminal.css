@@ -1,0 +1,275 @@
+/* terminal.css - Kairos Terminal Modular Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at 20% 30%, #0a0c12, #030507);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    padding: 1rem;
+}
+
+/* Terminal Container */
+.terminal {
+    background-color: #0b0e14;
+    border: 1px solid #2a2f3f;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.terminal.dreaming {
+    box-shadow: 0 0 30px rgba(155, 89, 182, 0.4);
+    border-color: #9b59b6;
+}
+
+/* Header */
+.terminal-header {
+    padding: 0.75rem 1.2rem;
+    background: #07090e;
+    border-bottom: 1px solid #1e232e;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.badge {
+    color: #6c8b9f;
+    font-size: 0.7rem;
+    background: #10131c;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    border-left: 2px solid #3e6b8c;
+}
+
+/* Rhythm Indicator */
+.rhythm-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: monospace;
+    font-size: 0.65rem;
+}
+
+.pulse-beat {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    animation: awakePulse 1.618s infinite;
+}
+
+.pulse-beat.dream {
+    background-color: #9b59b6;
+    animation: dreamPulse 3.14159s infinite;
+}
+
+@keyframes awakePulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); background-color: #2ecc71; }
+}
+
+@keyframes dreamPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); background-color: #e74c3c; }
+}
+
+/* Spectrum Dots */
+.spectrum {
+    display: flex;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+.spectrum-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.spectrum-dot.active {
+    transform: scale(1.3);
+    box-shadow: 0 0 8px currentColor;
+}
+
+/* Status */
+.status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #7c8ea0;
+    font-size: 0.7rem;
+}
+
+.led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    box-shadow: 0 0 4px #2ecc71;
+    animation: pulse 2s infinite;
+}
+
+.led.dream {
+    background-color: #9b59b6;
+    animation: dreamLedPulse 1.618s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+@keyframes dreamLedPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); background-color: #e74c3c; }
+}
+
+.counter {
+    font-family: monospace;
+    font-size: 0.65rem;
+    background: #1a1f2a;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+}
+
+/* Output */
+.output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #d4e0ed;
+    background: #0a0d14;
+}
+
+.output div {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 0.2rem;
+}
+
+/* Band Colors for Output */
+.band-hermes { color: #e8a87c; border-left: 2px solid #e8a87c; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-apollo { color: #f4d03f; border-left: 2px solid #f4d03f; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-hephaestus { color: #d45500; border-left: 2px solid #d45500; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-demeter { color: #6b8e23; border-left: 2px solid #6b8e23; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-poseidon { color: #2c6e9e; border-left: 2px solid #2c6e9e; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-athena { color: #8e44ad; border-left: 2px solid #8e44ad; padding-left: 0.5rem; margin: 0.2rem 0; }
+.band-zeus { color: #9b59b6; border-left: 2px solid #9b59b6; padding-left: 0.5rem; margin: 0.2rem 0; text-shadow: 0 0 1px #9b59b6; }
+
+/* Dream and Thunder Effects */
+.output div.dream {
+    opacity: 0.8;
+    font-style: italic;
+    animation: fadeIn 0.8s ease-in;
+}
+
+.output div.thunder {
+    animation: thunderFlash 0.5s ease-in-out;
+}
+
+.output div.rejected {
+    color: #e74c3c;
+    border-left: 2px solid #e74c3c;
+    padding-left: 0.5rem;
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 0.8; transform: translateX(0); }
+}
+
+@keyframes thunderFlash {
+    0% { text-shadow: 0 0 0px #9b59b6; }
+    50% { text-shadow: 0 0 20px #9b59b6; color: #d4af37; }
+    100% { text-shadow: 0 0 0px #9b59b6; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Input Line */
+.input-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #06080e;
+    border-top: 1px solid #1a1f2a;
+    padding: 0.7rem 1rem;
+}
+
+.prompt {
+    color: #7aa2c7;
+    font-weight: 600;
+}
+
+#command {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #eaf2ff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    padding: 0.2rem 0;
+}
+
+/* Footer */
+.footer {
+    background: #03050780;
+    font-size: 0.65rem;
+    padding: 0.3rem 1rem;
+    color: #4b5e77;
+    border-top: 1px solid #141a24;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .terminal-header {
+        padding: 0.5rem 0.8rem;
+    }
+    .badge {
+        font-size: 0.55rem;
+    }
+    .output {
+        padding: 0.8rem;
+        font-size: 0.75rem;
+    }
+    .input-line {
+        padding: 0.5rem 0.8rem;
+    }
+    #command {
+        font-size: 0.8rem;
+    }
+    .spectrum-dot {
+        width: 8px;
+        height: 8px;
+    }
+}
