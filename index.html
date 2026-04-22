@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kairos Terminal · Modular · terminal_dev</title>
+    <link rel="stylesheet" href="css/terminal.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/main.js"></script>
+</head>
+<body>
+    <div class="terminal" id="terminalContainer">
+        <div class="terminal-header">
+            <div class="badge">⚡ KAIROS · MODULAR · terminal_dev</div>
+            <div class="rhythm-indicator">
+                <div class="pulse-beat" id="pulseBeat"></div>
+                <span id="rhythmLabel">φ = 1.618s</span>
+            </div>
+            <div class="spectrum" id="spectrumDots">
+                <div class="spectrum-dot" style="background:#e8a87c"></div>
+                <div class="spectrum-dot" style="background:#f4d03f"></div>
+                <div class="spectrum-dot" style="background:#d45500"></div>
+                <div class="spectrum-dot" style="background:#6b8e23"></div>
+                <div class="spectrum-dot" style="background:#2c6e9e"></div>
+                <div class="spectrum-dot" style="background:#8e44ad"></div>
+                <div class="spectrum-dot" style="background:#9b59b6"></div>
+            </div>
+            <div class="status">
+                <span class="led" id="statusLed"></span>
+                <span id="stateLabel">AWAKE</span>
+                <span class="counter" id="counter">0/30</span>
+            </div>
+        </div>
+
+        <div id="output" class="output">
+            <div>Kairos Terminal — Modular Architecture (terminal_dev)</div>
+            <div>Each god is a module. Athena guards wisdom.</div>
+            <div>&nbsp;</div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div>✈️ Hermes     1-10 words    → 4-8 Hz     (Infrared)</div>
+            <div>☀️ Apollo     11-25 words   → 8-12 Hz    (Sun Gold)</div>
+            <div>🔥 Hephaestus 26-50 words   → 12-15 Hz   (Orange)</div>
+            <div>🌾 Demeter    51-100 words  → 15-20 Hz   (Green)</div>
+            <div>🌊 Poseidon   101-150 words → 20-30 Hz   (Blue)</div>
+            <div>🦉 Athena     151-225 words → 30-40 Hz   (Purple) ← GATEKEEPER</div>
+            <div>⚡ Zeus       226-325 words → 40-100 Hz  (Ultraviolet)</div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div>&nbsp;</div>
+        </div>
+
+        <div class="input-line">
+            <span class="prompt">➜</span>
+            <input type="text" id="command" placeholder="type 'help' | modular gods loading..." autofocus spellcheck="false" autocomplete="off">
+        </div>
+
+        <div class="footer">
+            <span>🏛️ Each god is a module · Athena judges wisdom</span>
+            <span>⚡ terminal_dev</span>
+        </div>
+    </div>
+</body>
+</html>
