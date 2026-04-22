@@ -1,8 +1,9 @@
 // main.js - Entry point for Kairos Terminal Modular
 
-import { initDatabase, getEntryCount, getRecentEntries, getRandomEntry } from './kernel/Database.js';
+import { initDatabase, getEntryCount, getRecentEntries, getRandomEntry, insertEntry } from './kernel/Database.js';
 import { DIVINE_BANDS, BAND_ORDER, PHI, PI, AWAKE_PULSES_TO_DREAM } from './kernel/Config.js';
-import { AthenaGate } from './gods/AthenaGate.js';
+import { Athena } from './gods/Athena.js';
+import { startEvolution, pauseEvolution, resumeEvolution, getEvolutionState } from './phases/EvolutionChain.js';
 
 // ============================================================
 // UI Helpers
@@ -24,6 +25,22 @@ function printLine(text, band = null, isDream = false, isThunder = false, isReje
     output.scrollTop = output.scrollHeight;
 }
 
+function updateSpectrumDot(bandIndex) {
+    const dots = document.querySelectorAll('.spectrum-dot');
+    dots.forEach((dot, i) => {
+        if (i <= bandIndex) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+}
+
+function resetSpectrumDots() {
+    const dots = document.querySelectorAll('.spectrum-dot');
+    dots.forEach(dot => dot.classList.remove('active'));
+}
+
 // ============================================================
 // State Management
 // ============================================================
@@ -32,22 +49,153 @@ let commandHistory = [];
 let historyIndex = -1;
 let awakePulseCount = 0;
 let isDreaming = false;
-let evolutionTimer = null;
+let pulseInterval = null;
 
 // ============================================================
-// Command Handlers (Simplified for initial testing)
+// Evolution UI Callbacks
+// ============================================================
+
+function onEvolutionStep(step) {
+    const bandInfo = DIVINE_BANDS[step.band];
+    const bandIndex = BAND_ORDER.indexOf(step.band);
+    
+    // Update spectrum dots
+    updateSpectrumDot(bandIndex);
+    
+    // Display the step
+    const preview = step.entry.substring(0, 70) + (step.entry.length > 70 ? '...' : '');
+    
+    if (step.status === 'rejected') {
+        printLine(`🦉 ${bandInfo.name} Gatekeeper:`, step.band, false, false, true);
+        printLine(`   Score: ${step.score}% (need ${Athena.threshold}%)`, step.band, false, false, true);
+        printLine(`   ❌ REJECTED. Retrying with refinement...`, step.band, false, false, true);
+        if (step.feedback && step.feedback.length) {
+            step.feedback.slice(0, 2).forEach(f => {
+                printLine(`   - ${f}`, step.band, false, false, true);
+            });
+        }
+    } else if (step.status === 'passed') {
+        printLine(`🦉 ${bandInfo.name} Gatekeeper: ✓ ACCEPTED (Score: ${step.score}%)`, step.band, false, false);
+        printLine(`   "Wisdom recognized. Proceed to ${step.band === 'athena' ? 'Zeus' : 'next band'}."`, step.band);
+    } else {
+        const timeSec = (step.time / 1000).toFixed(2);
+        printLine(`🌱 ${bandInfo.icon} ${bandInfo.name} (${bandInfo.index}φ = ${timeSec}s): "${preview}"`, step.band, false);
+    }
+}
+
+function onEvolutionComplete(complete) {
+    const zeusEntry = complete.zeusEntry;
+    const preview = zeusEntry.substring(0, 100) + (zeusEntry.length > 100 ? '...' : '');
+    
+    printLine(``);
+    printLine(`⚡ ZEUS THUNDERS — Evolution complete!`, 'zeus', false, true);
+    printLine(`   "${preview}"`, 'zeus', false, true);
+    printLine(`💫 New evolution chain begins in 5 seconds...`, null);
+    
+    // Reset spectrum dots
+    resetSpectrumDots();
+}
+
+// ============================================================
+// Awake Pulse Counter
+// ============================================================
+
+function updateCounter() {
+    const counterEl = document.getElementById('counter');
+    if (counterEl) {
+        counterEl.textContent = `${awakePulseCount}/${AWAKE_PULSES_TO_DREAM}`;
+    }
+}
+
+function startAwakePulses() {
+    if (pulseInterval) clearInterval(pulseInterval);
+    pulseInterval = setInterval(() => {
+        if (!isDreaming) {
+            awakePulseCount++;
+            updateCounter();
+            
+            // Visual pulse feedback
+            const pulseBeat = document.getElementById('pulseBeat');
+            if (pulseBeat) {
+                pulseBeat.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    if (pulseBeat) pulseBeat.style.transform = 'scale(1)';
+                }, 100);
+            }
+            
+            // Check if we should start dreaming
+            if (awakePulseCount >= AWAKE_PULSES_TO_DREAM) {
+                startDreaming();
+            }
+        }
+    }, PHI);
+}
+
+// ============================================================
+// Dream State (Placeholder - to be expanded)
+// ============================================================
+
+async function startDreaming() {
+    isDreaming = true;
+    pauseEvolution();
+    
+    document.getElementById('terminalContainer').classList.add('dreaming');
+    document.getElementById('pulseBeat').classList.add('dream');
+    document.getElementById('rhythmLabel').innerHTML = 'π = 3.14s';
+    document.getElementById('stateLabel').innerHTML = 'DREAMING';
+    
+    printLine('✨ The terminal falls asleep... Dreams begin.', null, true);
+    
+    // Placeholder - dream logic will go here
+    // For now, just wake up after a few seconds
+    setTimeout(() => {
+        endDreaming();
+    }, 8000);
+}
+
+async function endDreaming() {
+    isDreaming = false;
+    awakePulseCount = 0;
+    updateCounter();
+    
+    document.getElementById('terminalContainer').classList.remove('dreaming');
+    document.getElementById('pulseBeat').classList.remove('dream');
+    document.getElementById('rhythmLabel').innerHTML = 'φ = 1.618s';
+    document.getElementById('stateLabel').innerHTML = 'AWAKE';
+    
+    printLine('💫 The dream fades. The terminal wakes.', null, true);
+    
+    resumeEvolution();
+}
+
+// ============================================================
+// Command Handlers
 // ============================================================
 
 const commands = {
     help: () => {
-        return `Available Commands:
+        return `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                  KAIROS TERMINAL — MODULAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌱 EVOLUTION:
+  Evolution runs continuously: Hermes → Apollo → Hephaestus → Demeter → Poseidon → Athena → Zeus
+  Each band takes BAND_INDEX × φ seconds
+  Athena judges wisdom at 65% threshold
+
+📝 COMMANDS:
   help                    - Show this message
   clear                   - Clear terminal output
   stats                   - Show database statistics
   test-athena <text>      - Test Athena's judgment on text
   list                    - Show recent entries
   random                  - Get random entry
-  add <label>: <body>     - Add a new entry`;
+  add <label>: <body>     - Add a new entry
+  evolution status        - Show current evolution state
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💫 Evolution brings order. Dreams bring chaos. Athena brings wisdom.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
     },
     
     clear: () => {
@@ -57,15 +205,23 @@ const commands = {
     
     stats: async () => {
         const count = await getEntryCount();
-        return `📊 Database Statistics\n\nTerminal Entries: ${count}\nAthena Threshold: ${AthenaGate.threshold}%\nAwake Pulse: ${awakePulseCount}/${AWAKE_PULSES_TO_DREAM}\nState: ${isDreaming ? 'DREAMING' : 'AWAKE'}`;
+        const state = getEvolutionState();
+        return `📊 Database Statistics\n\nTerminal Entries: ${count}\nAthena Threshold: ${Athena.threshold}%\nAwake Pulse: ${awakePulseCount}/${AWAKE_PULSES_TO_DREAM}\nState: ${isDreaming ? 'DREAMING' : 'AWAKE'}\nEvolution: ${state.isActive ? 'ACTIVE' : 'PAUSED'}\nCurrent Band: ${state.currentBand?.toUpperCase() || 'NONE'}`;
+    },
+    
+    'evolution': async (args) => {
+        if (args[0] === 'status') {
+            const state = getEvolutionState();
+            return `🌱 Evolution Status\n\nCurrent Band: ${state.currentBand?.toUpperCase() || 'NONE'}\nActive: ${state.isActive ? 'YES' : 'NO'}\nChain: ${Object.keys(state.currentChain).filter(b => state.currentChain[b]).join(' → ')}`;
+        }
+        return 'Usage: evolution status';
     },
     
     'test-athena': async (args) => {
         const text = args.join(' ');
         if (!text) return 'Usage: test-athena <text to judge>';
         
-        const judgment = AthenaGate.judge({ body: text });
-        const bandInfo = DIVINE_BANDS.athena;
+        const judgment = Athena.judge({ body: text });
         
         let output = `🦉 Athena Gatekeeper:\n`;
         output += `   Score: ${judgment.score}% (need ${judgment.threshold}%)\n`;
@@ -80,7 +236,7 @@ const commands = {
             });
             
             // Show refinement suggestion
-            const refined = AthenaGate.suggestRefinement({ body: text });
+            const refined = Athena.suggestRefinement({ body: text });
             output += `\n   Suggested refinement:\n   "${refined.refined.substring(0, 100)}..."`;
         }
         
@@ -131,7 +287,7 @@ const commands = {
         
         // If target is Athena or Zeus, must pass judgment
         if (band === 'athena' || band === 'zeus') {
-            const judgment = AthenaGate.judge({ body });
+            const judgment = Athena.judge({ body });
             if (!judgment.passed) {
                 let msg = `🦉 Athena rejects entry for ${bandInfo.name} band.\n`;
                 msg += `   Score: ${judgment.score}% (need ${judgment.threshold}%)\n`;
@@ -141,7 +297,6 @@ const commands = {
             }
         }
         
-        const { insertEntry } = await import('./kernel/Database.js');
         await insertEntry({
             label, body, word_count: wordCount,
             divine_band: band, frequency_hz: bandInfo.freqValue,
@@ -180,82 +335,18 @@ async function processCommand(input) {
         return;
     }
     
+    if (cmd === 'evolution') {
+        const result = await commands.evolution(args);
+        if (result) printLine(result);
+        return;
+    }
+    
     if (commands[cmd]) {
         const result = await commands[cmd](args);
         if (result) printLine(result);
     } else {
         printLine(`Unknown command: ${cmd}. Type 'help' for available commands.`);
     }
-}
-
-// ============================================================
-// Awake Pulse Counter
-// ============================================================
-
-let pulseInterval = null;
-
-function updateCounter() {
-    const counterEl = document.getElementById('counter');
-    if (counterEl) {
-        counterEl.textContent = `${awakePulseCount}/${AWAKE_PULSES_TO_DREAM}`;
-    }
-}
-
-function startAwakePulses() {
-    if (pulseInterval) clearInterval(pulseInterval);
-    pulseInterval = setInterval(() => {
-        if (!isDreaming) {
-            awakePulseCount++;
-            updateCounter();
-            
-            // Visual pulse feedback
-            const pulseBeat = document.getElementById('pulseBeat');
-            if (pulseBeat) {
-                pulseBeat.style.transform = 'scale(1.3)';
-                setTimeout(() => {
-                    if (pulseBeat) pulseBeat.style.transform = 'scale(1)';
-                }, 100);
-            }
-            
-            // Check if we should start dreaming
-            if (awakePulseCount >= AWAKE_PULSES_TO_DREAM) {
-                startDreaming();
-            }
-        }
-    }, PHI);
-}
-
-// ============================================================
-// Dream State (Placeholder - to be expanded)
-// ============================================================
-
-async function startDreaming() {
-    isDreaming = true;
-    document.getElementById('terminalContainer').classList.add('dreaming');
-    document.getElementById('pulseBeat').classList.add('dream');
-    document.getElementById('rhythmLabel').innerHTML = 'π = 3.14s';
-    document.getElementById('stateLabel').innerHTML = 'DREAMING';
-    
-    printLine('✨ The terminal falls asleep... Dreams begin.', null, true);
-    
-    // Placeholder - dream logic will go here
-    // For now, just wake up after a few seconds
-    setTimeout(() => {
-        endDreaming();
-    }, 8000);
-}
-
-async function endDreaming() {
-    isDreaming = false;
-    awakePulseCount = 0;
-    updateCounter();
-    
-    document.getElementById('terminalContainer').classList.remove('dreaming');
-    document.getElementById('pulseBeat').classList.remove('dream');
-    document.getElementById('rhythmLabel').innerHTML = 'φ = 1.618s';
-    document.getElementById('stateLabel').innerHTML = 'AWAKE';
-    
-    printLine('💫 The dream fades. The terminal wakes.', null, true);
 }
 
 // ============================================================
@@ -268,15 +359,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         await initDatabase();
         printLine('✓ Connected to Supabase');
-        printLine('✓ Athena Gate module loaded');
-        printLine('✓ Modular architecture ready');
+        printLine('✓ All gods loaded');
+        printLine('✓ Evolution chain ready');
         printLine('');
-        printLine('Try: test-athena "The ancient one carries wisdom earned through ages of silence."');
-        printLine('Try: help');
+        printLine('🌱 Evolution begins: Hermes → Apollo → Hephaestus → Demeter → Poseidon → Athena → Zeus');
         printLine('');
     } catch (err) {
         printLine(`ERROR: ${err.message}`);
     }
+    
+    // Start evolution with callbacks
+    startEvolution(onEvolutionStep, onEvolutionComplete);
     
     // Start awake pulses
     startAwakePulses();
